@@ -1,29 +1,67 @@
 :- use_module(library(clpfd)).
 
-
-
-can(move(Block, From, To), [on(Block,From)|Conditions]) :-
-    block(Block, Size),
+%movimentos
+%-----------------------------------------------------------------------
+%mover um bloco de tamanho 1
+can(move1(Block, From, To), [on(Block,From)|Conditions]) :-
+    block(Block, 1),
     place(From),
-    valid_region(To, Size),
+    place(To),
     From \== To,
-    clear_above(From, Size, [], ClearList),
-    stable(To, Size, OccpList),
+    clear_above(From, 1, [], ClearList),
+    stable(To, 1, OccpList),
     append(ClearList, OccpList, Conditions).
 
-adds(move(Block, From, To), [on(Block, To)|Conditions]) :-
-    block(Block, Size),
-    occ_positions(To, Size, [], OccList),       %occupied(To)
-    clear_positions(From, Size, [], ClearList), %clear(From)
+%mover um bloco de tamanho 2
+can(move2(Block, From, To), [on(Block,From)|Conditions]) :-
+    block(Block, 2),
+    place(From),
+    valid_region(To, 2),
+    From \== To,
+    clear_above(From, 2, [], ClearList),
+    stable(To, 2, OccpList),
+    append(ClearList, OccpList, Conditions).
+
+%mover um bloco de tamanho 3
+can(move3(Block, From, To), [on(Block,From)|Conditions]) :-
+    block(Block, 3),
+    place(From),
+    valid_region(To, 3),
+    From \== To,
+    clear_above(From, 3, [], ClearList),
+    stable(To, 3, OccpList),
+    append(ClearList, OccpList, Conditions).
+
+
+
+
+adds(move1(Block, From, To), [on(Block, To), occupied(To), clear(From)]).
+
+adds(move2(Block, From, To), [on(Block, To)|Conditions]) :-
+    occ_positions(To, 2, [], OccList),       %occupied(To)
+    clear_positions(From, 2, [], ClearList), %clear(From)
     append(OccList, ClearList, Conditions).
 
-deletes(move(Block, From, To), [on(Block, From)|Conditions]) :-
-    block(Block, Size),
-    occ_positions(From, Size, [], OccList),   %occupied(From)
-    clear_positions(To, Size, [], ClearList), %clear(To)
+adds(move3(Block, From, To), [on(Block, To)|Conditions]) :-
+    occ_positions(To, 3, [], OccList),       %occupied(To)
+    clear_positions(From, 3, [], ClearList), %clear(From)
     append(OccList, ClearList, Conditions).
 
 
+
+
+deletes(move1(Block, From, To), [on(Block, From), occupied(From), clear(To)]).
+
+deletes(move2(Block, From, To), [on(Block, From)|Conditions]) :-
+    occ_positions(From, 2, [], OccList),   %occupied(From)
+    clear_positions(To, 2, [], ClearList), %clear(To)
+    append(OccList, ClearList, Conditions).
+
+deletes(move3(Block, From, To), [on(Block, From)|Conditions]) :-
+    occ_positions(From, 3, [], OccList),   %occupied(From)
+    clear_positions(To, 3, [], ClearList), %clear(To)
+    append(OccList, ClearList, Conditions).
+%-----------------------------------------------------------------------
 
 
 
@@ -32,15 +70,17 @@ deletes(move(Block, From, To), [on(Block, From)|Conditions]) :-
 %gets the positions occupied by a block being placed
 occ_positions(_, 0, List, List).
 occ_positions((X,Y), Size, List, OccList) :-
+    Size >= 1,
     X2 #= X + 1,
-    Size2 #= Size - 1,
+    Size2 is Size - 1,
     occ_positions((X2,Y), Size2, [occupied((X,Y))|List], OccList).
 
 %gets the positions cleared by a block being moved
 clear_positions(_, 0, List, List).
 clear_positions((X,Y), Size, List, ClearList) :-
+    Size >= 1,
     X2 #= X + 1,
-    Size2 #= Size - 1,
+    Size2 is Size - 1,
     clear_positions((X2,Y), Size2, [clear((X,Y))|List], ClearList).
 
 %checks if a given region is within the grid
@@ -51,9 +91,10 @@ valid_region((X, Y), Size) :-
 %gets the list of positions that must be clear for a block to move
 clear_above(_, 0, List, List).
 clear_above((X,Y), Size, List, ClearList) :-
+    Size >= 1,
     X2 #= X + 1,
     Y2 #= Y + 1,
-    Size2 #= Size - 1,
+    Size2 is Size - 1,
     clear_above((X2,Y), Size2, [clear((X,Y2))|List], ClearList).
 
 %gets the list of positions that must be occupied for a block to be placed
@@ -86,10 +127,10 @@ block(d, 3).
 
 % 6x4 grid
 place((X, Y)) :-
-    X >= 1,
-    X =< 6,
-    Y >= 1,
-    Y =< 4.
+    X #>= 1,
+    X #=< 6,
+    Y #>= 1,
+    Y #=< 4.
 
 % A possible representation for a state in the blocks world
 %      4
