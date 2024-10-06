@@ -10,7 +10,7 @@ can(move1(Block, From, To), [on(Block,From)|Conditions]) :-
     From \== To,
     clear_above(From, 1, [], ClearList),
     stable(To, 1, OccpList),
-    append(ClearList, OccpList, Conditions).
+    append([clear(To)|ClearList], OccpList, Conditions).
 
 %mover um bloco de tamanho 2
 can(move2(Block, From, To), [on(Block,From)|Conditions]) :-
@@ -18,7 +18,9 @@ can(move2(Block, From, To), [on(Block,From)|Conditions]) :-
     place(From),
     valid_region(To, 2),
     From \== To,
-    clear_above(From, 2, [], ClearList),
+    clear_above(From, 2, [], ClearList1),
+    clear_positions(To, 2, [], ClearList2),
+    append(ClearList1, ClearList2, ClearList),
     stable(To, 2, OccpList),
     append(ClearList, OccpList, Conditions).
 
@@ -28,7 +30,9 @@ can(move3(Block, From, To), [on(Block,From)|Conditions]) :-
     place(From),
     valid_region(To, 3),
     From \== To,
-    clear_above(From, 3, [], ClearList),
+    clear_above(From, 3, [], ClearList1),
+    clear_positions(To, 3, [], ClearList2),
+    append(ClearList1, ClearList2, ClearList),
     stable(To, 3, OccpList),
     append(ClearList, OccpList, Conditions).
 
@@ -194,7 +198,11 @@ state1([occupied((1,1)),
 
 
 
-goal1([on(d,(1,2))]).
+goal1([on(a,(1,2)),
+        on(b,(6,1)),
+        on(c,(1,1)),
+        on(d,(3,1))
+      ]).
 
 
 
