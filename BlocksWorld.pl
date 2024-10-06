@@ -9,7 +9,7 @@ can(move1(Block, From, To), [on(Block,From)|Conditions]) :-
     place(To),
     From \== To,
     clear_above(From, 1, [], ClearList),
-    stable(To, 1, OccpList),
+    stable(To, From, 1, OccpList),
     append([clear(To)|ClearList], OccpList, Conditions).
 
 %mover um bloco de tamanho 2
@@ -21,7 +21,7 @@ can(move2(Block, From, To), [on(Block,From)|Conditions]) :-
     clear_above(From, 2, [], ClearList1),
     clear_positions(To, 2, [], ClearList2),
     append(ClearList1, ClearList2, ClearList),
-    stable(To, 2, OccpList),
+    stable(To, From, 2, OccpList),
     append(ClearList, OccpList, Conditions).
 
 %mover um bloco de tamanho 3
@@ -33,7 +33,7 @@ can(move3(Block, From, To), [on(Block,From)|Conditions]) :-
     clear_above(From, 3, [], ClearList1),
     clear_positions(To, 3, [], ClearList2),
     append(ClearList1, ClearList2, ClearList),
-    stable(To, 3, OccpList),
+    stable(To, From, 3, OccpList),
     append(ClearList, OccpList, Conditions).
 
 
@@ -102,19 +102,61 @@ clear_above((X,Y), Size, List, ClearList) :-
     clear_above((X2,Y), Size2, [clear((X,Y2))|List], ClearList).
 
 %gets the list of positions that must be occupied for a block to be placed
-stable((X,Y), 1, [occupied((X,Y2))]) :-
-    Y2 #= Y - 1.
+stable((X,Y), (Xblock,Yblock), 1, [occupied((X,Y2))]) :-
+    Y2 #= Y - 1,
+    %a block cannot be placed above itself
+    (Xblock #\= X;
+     Yblock #\= Y2).
 
-stable((X,Y), 2, [occupied((X,Y2)), occupied((X2,Y2))]) :-
+stable((X,Y), (Xblock,Yblock), 2, [occupied((X,Y2)), occupied((X2,Y2))]) :-
     Y2 #= Y - 1,
-    X2 #= X + 1.
+    X2 #= X + 1,
+    Xblock2 #= Xblock + 1,
+     %the left support of the block cannot be its own left
+    (Xblock #\= X;
+     Yblock #\= Y2),
+    %the right support of the block cannot be its own left
+    (Xblock #\= X2;
+     Yblock #\= Y2),
+    %the left support of the block cannot be its own right
+    (Xblock2 #\= X;
+     Yblock #\= Y2).
 
-stable((X,Y), 3, [occupied((X2,Y2))]) :-
+stable((X,Y), (Xblock,Yblock), 3, [occupied((X2,Y2))]) :-
     Y2 #= Y - 1,
-    X2 #= X + 1.
-stable((X,Y), 3, [occupied((X,Y2)), occupied((X2,Y2))]) :-
+    X2 #= X + 1,
+    Xblock2 #= Xblock + 1,
+    Xblock3 #= Xblock2 + 1,
+    %the support of the block cannot be its own left
+    (Xblock #\= X2;
+     Yblock #\= Y2),
+    %the support of the block cannot be its own middle
+    (Xblock2 #\= X2;
+     Yblock #\= Y2),
+    %the support of the block cannot be its own right
+    (Xblock3 #\= X2;
+     Yblock #\= Y2).
+stable((X,Y), (Xblock,Yblock), 3, [occupied((X,Y2)), occupied((X2,Y2))]) :-
     Y2 #= Y - 1,
-    X2 #= X + 2.
+    X2 #= X + 2,
+    Xblock2 #= Xblock + 1,
+    Xblock3 #= Xblock2 + 1,
+    %the left support of the block cannot be its own left
+    (Xblock #\= X;
+     Yblock #\= Y2),
+    %the left support of the block cannot be its own middle
+    (Xblock2 #\= X;
+     Yblock #\= Y2),
+    %the left support of the block cannot be its own right
+    (Xblock3 #\= X;
+     Yblock #\= Y2),
+
+    %the right support of the block cannot be its own left
+    (Xblock #\= X2;
+     Yblock #\= Y2),
+    %the right support of the block cannot be its own middle
+    (Xblock2 #\= X2;
+     Yblock #\= Y2).
     
 
 
@@ -130,11 +172,35 @@ block(c, 2).
 block(d, 3).
 
 % 6x4 grid
-place((X, Y)) :-
-    X #>= 1,
-    X #=< 6,
-    Y #>= 1,
-    Y #=< 4.
+place((1, 1)).
+place((1, 2)).
+place((1, 3)).
+place((1, 4)).
+
+place((2, 1)).
+place((2, 2)).
+place((2, 3)).
+place((2, 4)).
+
+place((3, 1)).
+place((3, 2)).
+place((3, 3)).
+place((3, 4)).
+
+place((4, 1)).
+place((4, 2)).
+place((4, 3)).
+place((4, 4)).
+
+place((5, 1)).
+place((5, 2)).
+place((5, 3)).
+place((5, 4)).
+
+place((6, 1)).
+place((6, 2)).
+place((6, 3)).
+place((6, 4)).
 
 % A possible representation for a state in the blocks world
 %      4
