@@ -5,35 +5,38 @@
 %mover um bloco de tamanho 1
 can(move1(Block, From, To), [on(Block,From)|Conditions]) :-
     block(Block, 1),
-    place(From),
     place(To),
+    stable(To, 1, OccpList),
+    place(From),
     From \== To,
+    \+ above_itself(From,1,OccpList),
     clear_above(From, 1, [], ClearList),
-    stable(To, From, 1, OccpList),
     append([clear(To)|ClearList], OccpList, Conditions).
 
 %mover um bloco de tamanho 2
 can(move2(Block, From, To), [on(Block,From)|Conditions]) :-
     block(Block, 2),
-    place(From),
     valid_region(To, 2),
+    stable(To, 2, OccpList),
+    place(From),
     From \== To,
+    \+ above_itself(From,2,OccpList),
     clear_above(From, 2, [], ClearList1),
     clear_positions(To, 2, [], ClearList2),
     append(ClearList1, ClearList2, ClearList),
-    stable(To, From, 2, OccpList),
     append(ClearList, OccpList, Conditions).
 
 %mover um bloco de tamanho 3
 can(move3(Block, From, To), [on(Block,From)|Conditions]) :-
     block(Block, 3),
-    place(From),
     valid_region(To, 3),
+    stable(To, 3, OccpList),
+    place(From),
     From \== To,
+    \+ above_itself(From,3,OccpList),
     clear_above(From, 3, [], ClearList1),
     clear_positions(To, 3, [], ClearList2),
     append(ClearList1, ClearList2, ClearList),
-    stable(To, From, 3, OccpList),
     append(ClearList, OccpList, Conditions).
 
 
@@ -71,6 +74,31 @@ deletes(move3(Block, From, To), [on(Block, From)|Conditions]) :-
 
 
 
+
+%checks if the block is being placed above itself
+above_itself((X,Y), 1, [occupied((X,Y))]).
+
+above_itself((Xb,Y), 2, [occupied((X,Y)),occupied((X2,Y))]) :-
+    Xb2 is Xb + 1,
+    (Xb == X;
+     Xb == X2;
+     Xb2 == X).
+
+above_itself((Xb,Y), 3, [occupied((X,Y))]) :-
+    Xb2 is Xb + 1,
+    Xb3 is Xb2 + 1,
+    (Xb == X;
+     Xb2 == X;
+     Xb3 == X).
+above_itself((Xb,Y), 3, [occupied((X,Y)),occupied((X2,Y))]) :-
+    Xb2 is Xb + 1,
+    Xb3 is Xb2 + 1,
+    (Xb == X;
+     Xb2 == X;
+     Xb3 == X;
+     Xb == X2;
+     Xb2 == X2).
+
 %gets the positions occupied by a block being placed
 occ_positions(_, 0, List, List).
 occ_positions((X,Y), Size, List, OccList) :-
@@ -102,61 +130,19 @@ clear_above((X,Y), Size, List, ClearList) :-
     clear_above((X2,Y), Size2, [clear((X,Y2))|List], ClearList).
 
 %gets the list of positions that must be occupied for a block to be placed
-stable((X,Y), (Xblock,Yblock), 1, [occupied((X,Y2))]) :-
-    Y2 #= Y - 1,
-    %a block cannot be placed above itself
-    (Xblock #\= X;
-     Yblock #\= Y2).
+stable((X,Y), 1, [occupied((X,Y2))]) :-
+    Y2 #= Y - 1.
 
-stable((X,Y), (Xblock,Yblock), 2, [occupied((X,Y2)), occupied((X2,Y2))]) :-
+stable((X,Y), 2, [occupied((X,Y2)), occupied((X2,Y2))]) :-
     Y2 #= Y - 1,
-    X2 #= X + 1,
-    Xblock2 #= Xblock + 1,
-     %the left support of the block cannot be its own left
-    (Xblock #\= X;
-     Yblock #\= Y2),
-    %the right support of the block cannot be its own left
-    (Xblock #\= X2;
-     Yblock #\= Y2),
-    %the left support of the block cannot be its own right
-    (Xblock2 #\= X;
-     Yblock #\= Y2).
+    X2 #= X + 1.
 
-stable((X,Y), (Xblock,Yblock), 3, [occupied((X2,Y2))]) :-
+stable((X,Y), 3, [occupied((X2,Y2))]) :-
     Y2 #= Y - 1,
-    X2 #= X + 1,
-    Xblock2 #= Xblock + 1,
-    Xblock3 #= Xblock2 + 1,
-    %the support of the block cannot be its own left
-    (Xblock #\= X2;
-     Yblock #\= Y2),
-    %the support of the block cannot be its own middle
-    (Xblock2 #\= X2;
-     Yblock #\= Y2),
-    %the support of the block cannot be its own right
-    (Xblock3 #\= X2;
-     Yblock #\= Y2).
-stable((X,Y), (Xblock,Yblock), 3, [occupied((X,Y2)), occupied((X2,Y2))]) :-
+    X2 #= X + 1.
+stable((X,Y), 3, [occupied((X,Y2)), occupied((X2,Y2))]) :-
     Y2 #= Y - 1,
-    X2 #= X + 2,
-    Xblock2 #= Xblock + 1,
-    Xblock3 #= Xblock2 + 1,
-    %the left support of the block cannot be its own left
-    (Xblock #\= X;
-     Yblock #\= Y2),
-    %the left support of the block cannot be its own middle
-    (Xblock2 #\= X;
-     Yblock #\= Y2),
-    %the left support of the block cannot be its own right
-    (Xblock3 #\= X;
-     Yblock #\= Y2),
-
-    %the right support of the block cannot be its own left
-    (Xblock #\= X2;
-     Yblock #\= Y2),
-    %the right support of the block cannot be its own middle
-    (Xblock2 #\= X2;
-     Yblock #\= Y2).
+    X2 #= X + 2.
     
 
 
