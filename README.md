@@ -1,4 +1,4 @@
-<h1>Execução do código:</h1>
+<h1>Exemplo de execução do código:</h1>
 
 <p><code>state1(S1)</code>,<code>goal1(G1)</code>,<code>plan(S1,G1,Plan,_)</code></p>
 
